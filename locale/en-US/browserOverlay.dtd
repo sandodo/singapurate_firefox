@@ -1,0 +1,6 @@
+<!ENTITY  SingapuRate.overlay.label         	"SingapuRate">
+<!ENTITY  SingapuRate.overlay.login.label   	"Login">
+<!ENTITY  SingapuRate.overlay.login.accessKey   "L">
+<!ENTITY  SingapuRate.overlay.logout.label  	"Logout">
+<!ENTITY  SingapuRate.overlay.logout.accessKey  "O">
+<!ENTITY  SingapuRate.preferences				"SingapuRate Preferences">
