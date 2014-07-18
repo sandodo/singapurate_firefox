@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<dialog id="loginSingapuRate" title="Verify SingapuRate Account"
+<dialog id="loginSingapuRate" title="Register | Update Your Account Information"
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-		buttons="accept,cancel,extra1"
+		buttons="accept,cancel"
 		buttonlabelcancel="Cancel"
-		buttonlabelaccept="Login"
-		buttonlabelextra1="Register"
-		ondialogaccept="return SingapuRateBrowserOverlay.onLogin(event);"
-		ondialogcancel="return SingapuRateBrowserOverlay.onCancel(event);"
-		ondialogextra1="return SingapuRateBrowserOverlay.onRegister(event);">
+		buttonlabelaccept="Ok"
+		onload="SingapuRateBrowserOverlay.onLoadLogin(event);"
+		ondialogaccept="return SingapuRateBrowserOverlay.onOK(event);"
+		ondialogcancel="return SingapuRateBrowserOverlay.onCancel(event);">
 
 	<dialogheader title="SingapuRate" description="provides ratings for all websites" id="title_header" />
 	<groupbox>
@@ -17,6 +16,8 @@
 		<textbox id="c_username" />
 		<label id="label_passwrd" value="Password" />
 		<textbox id="c_password" type="password" />
+		<label id="label_birthday" value="Birthday (DD-MM-YYYY)" />
+		<textbox id="c_birthday"  />
 	</groupbox>
 	<script type="application/x-javascript" src="chrome://singapurate/content/SingapuRate.js"></script>
 </dialog>

@@ -16,6 +16,8 @@
   </stringbundleset>
 
   <script type="application/x-javascript"
+    src="chrome://singapurate/content/utils.js" />
+  <script type="application/x-javascript"
     src="chrome://singapurate/content/SingapuRate.js" />
   
   <popup id="menu_ToolsPopup">
