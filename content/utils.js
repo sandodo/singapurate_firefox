@@ -184,7 +184,6 @@ var SingapuRateUtilities =
 			//it is not started with www., add it
 			sOnlyDomainName = "www." + sOnlyDomainName;
 		}	
-		
 		return sOnlyDomainName;	
 	},
 	
@@ -539,31 +538,46 @@ var SingapuRatePrefs =
 
 var SingapuRateWebService = 
 {
-	send : function(url, method, header, body, async, funcName)
+	startParsingWS : function(soap)
+	{
+		body = soap.getElementsByTagName("return");
+		var retString = "";
+		for(var i = 0; i < body.length; i++)
+		{
+			retString = body[i].childNodes[0].nodeValue;
+			break;
+		}
+		return retString;
+	},	
+	
+	sendReq : function(url, method, header, body, funcName)
 	{
 		var xmlresult = "";
-		var httprequest = new XMLHttpRequest();
-		var parser = new DOMParser();
+		
+		var httprequest = new SingapuRateMainWindow.XMLHttpRequest();
+		var parser = new SingapuRateMainWindow.DOMParser();
+		
 		var targetnamespace = SingapuRateUtilities.SingapuRateWSNameSpace;
 		var choosedoperationname = funcName;
 
 		var getresponse = function () {
+			
 			//callback gets response
 			if (httprequest.readyState == 4) 
 			{
 				try 
 				{
 					var response = "";
-					if (httprequest.responseXML != null){
-							response = HTTPProxy.xmlresult;
+					if (httprequest.responseXML != null)
+					{
+							response = httprequest.responseXML;
 					}
 					else
 					{
-						var domparser = new DOMParser();
-						response = domparser.parseFromString(httprequest.responseText,'text/xml');
+						response = parser.parseFromString(httprequest.responseText,'text/xml');
 					}
 					
-					var retString = this.startParsingWS(response);
+					var retString = SingapuRateWebService.startParsingWS(response);
 					//now check whether this login credential has been properly verified or not.
 					var resArray = retString.split("|");
 					var domainUrl = "";
@@ -612,6 +626,7 @@ var SingapuRateWebService =
 						}
 					}
 					
+					//we can actually pass checking domain here
 					if(domainUrl != "")
 					{
 						//add it to cache
@@ -653,6 +668,7 @@ var SingapuRateWebService =
 						}
 						SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches + 1;
 
+						/*						
 						//echeck every tab
 						var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 						                     .getService(Components.interfaces.nsIWindowMediator);
@@ -669,7 +685,9 @@ var SingapuRateWebService =
 						    for (var index = 0; index < numTabs; index++) 
 						    {
 						    	var currentBrowser = tabbrowser.getBrowserAtIndex(index);
-						      	if (currentBrowser.currentURI.spec.indexOf( domainUrl ) == 0) 
+						    	var sCurrentUri = SingapuRateUtilities.getOnlyDomainName(sUrlAddress, SingapuRateUtilities.SingapuRateDomainCheckDepth);
+						    	SingapuRateMainWindow.alert("getresponse() " + sCurrentUri + " vs " + domainUrl);
+						      	if (sCurrentUri.indexOf( domainUrl ) == 0) 
 						      	{
 						        	// The URL is already opened. block this tab.
 						        	tabbrowser.selectedTab = tabbrowser.tabContainer.childNodes[index];
@@ -750,32 +768,34 @@ var SingapuRateWebService =
 						      	}
 						    }
 					  	}
+					  	//*/
 						  	
 						return;
 					}
 					else
 					{
-						//something wrong with the domain,
-						SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
+						//something wrong with the domain, shall not happen
 					}
 					
 				}
 				catch(e) 
 				{
 					//error in getting response, shall never happen
-					SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
+					//SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
+					SingapuRateMainWindow.alert("error in getting response, shall never happen");
+
 				}
 			}
 		}
 		
-		var gettimeout = function () 
-		{
-			//something wrong with the webservice, block current tab
-			SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
-		}		
+		//var gettimeout = function () 
+		//{
+		//	//something wrong with the webservice, block current tab
+		//	SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
+		//}		
 						
 		httprequest.onreadystatechange = getresponse;
-		httprequest.ontimeout = gettimeout;
+		//httprequest.ontimeout = gettimeout;
 		try 
 		{
 			httprequest.open(method, url, true);
@@ -800,12 +820,13 @@ var SingapuRateWebService =
     		var errMsg = stringBundle.getString("SingapuRate.errRequesting");
 			SingapuRateMainWindow.alert(errMsg);
 		}		
+		
 		return xmlresult;
 	},	
 	
 	soaprequest : function(targetnamespace, method, parameters)
 	{
-		var soaprequest = 
+		var soaprequestStr = 
 							"<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
 							"<soap:Envelope " +
 							"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
@@ -816,20 +837,8 @@ var SingapuRateWebService =
 							parameters +
 							"</" + method + "></soap:Body></soap:Envelope>";
 					
-		return soaprequest;
+		return soaprequestStr;
 	},
-	
-	startParsingWS : function(soap)
-	{
-		body = soap.getElementsByTagName("return");
-		var retString = "";
-		for(var i = 0; i < body.length; i++)
-		{
-			retString = body[i].childNodes[0].nodeValue;
-			break;
-		}
-		return retString;
-	},	
 
 	doSendRequest : function(funcName, param_and_inputs) 
 	{
@@ -844,22 +853,21 @@ var SingapuRateWebService =
 			outString = outString + tempStr;
 		}
 				
-		var soaprequestStr = this.soaprequest(targetnamespace, choosedoperationname, outString);
+		var soaprequestStr = SingapuRateWebService.soaprequest(targetnamespace, choosedoperationname, outString);
 		
 		// using SOAP Version 1.1
-		var location = SingapuRateUtilities.SingapuRateWSLocation;
-		
 		//prepare to send the soap request
 		var wsMethod = "POST";
 		var wsHeader = "Content-Type: text/xml";
 		var wsBody = soaprequestStr;
 		var response = "";
 		
-		SingapuRateMainWindow.alert(wsBody);
-		
+		SingapuRateMainWindow.alert(SingapuRateUtilities.SingapuRateWSLocation + "\n" + wsMethod + "\n" + wsHeader + "\n" + wsBody + "\n" + funcName);
+
 		try
 		{
-			this.send(location, wsMethod, wsHeader, wsBody, funcName);
+			SingapuRateWebService.sendReq( SingapuRateUtilities.SingapuRateWSLocation, wsMethod, wsHeader, wsBody, funcName );
+			
 		}
 		catch(e)
 		{
@@ -881,7 +889,7 @@ var SingapuRateWebsiteRatings =
 	    if(!weburl || weburl.length == 0)
 	    	return false;
 
-		if( this.isSingapurateDomain(weburl) === true )
+		if( SingapuRateUtilities.isSingapurateDomain(weburl) === true )
 		{
 			//certified singapurate urls always
 			return false;
@@ -970,6 +978,7 @@ var SingapuRateWebsiteRatings =
 				//if need to check and certified with singapurate
 				var param_and_inputs = {"usr" : SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAcctName],
 										"domain" : sOnlyDomainName };
+										
 				SingapuRateWebService.doSendRequest(SingapuRateUtilities.SingapuRateWSRateMethod, param_and_inputs);
 
 				//as we donot have this domain url in cache, we allow it first. callback of the web service will block it later if not allowed
@@ -1071,7 +1080,7 @@ var SingapuRateWebsiteRatings =
 	    if(!weburl || weburl.length == 0)
 	    	return true;
 	    
-		if( this.isSingapurateDomain(weburl) === true )
+		if( SingapuRateUtilities.isSingapurateDomain(weburl) === true )
 		{
 			//certified singapurate urls always
 			return true;
@@ -1134,7 +1143,7 @@ var SingapuRateWebsiteRatings =
 	    if(!weburl || weburl.length == 0)
 	    	return retResults;
 
-		if( this.isSingapurateDomain(weburl) === true )
+		if( SingapuRateUtilities.isSingapurateDomain(weburl) === true )
 		{
 			//certified singapurate urls always
 			return retResults;
@@ -1150,6 +1159,7 @@ var SingapuRateWebsiteRatings =
 			
 		    if( SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAuthenticate] === false )
 		    {
+			    SingapuRateMainWindow.alert("isBlockedInCache() user is not authenticated");
 			    //donot allow access websites
 			    retResults[strKeyBlocked] = true;
 			    return retResults;
