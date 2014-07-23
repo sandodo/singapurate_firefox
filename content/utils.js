@@ -784,7 +784,8 @@ var SingapuRateWebService =
 									      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/viewtopic.php?f=12&t=1280");
 									    }
 								    },
-												
+									
+								    /*			
 								    //it is only for internal check of cached list
 									{
 								        label: 'Caches',
@@ -794,7 +795,7 @@ var SingapuRateWebService =
 									        //open preference dialog box
 									        SingapuRatePrefs.loadDomainCaches();
 									    }
-								    }
+								    }//*/
 								    ];
 								}
 							    const priority = nb.PRIORITY_WARNING_HIGH;

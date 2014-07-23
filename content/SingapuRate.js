@@ -237,6 +237,7 @@ var XULSingapuRateChrome =
 								    }
 							    },
 								
+							    /*
 							    //it is only for internal check of cached list
 								{
 							        label: 'Caches',
@@ -246,7 +247,7 @@ var XULSingapuRateChrome =
 								        //open preference dialog box
 								        SingapuRatePrefs.loadDomainCaches();
 								    }
-							    }
+							    }//*/
 							    ];
 							}
 						    const priority = nb.PRIORITY_WARNING_HIGH;
