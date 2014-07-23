@@ -633,8 +633,6 @@ var SingapuRateWebService =
 					
 					var retString = SingapuRateWebService.startParsingWS(response);
 					
-					SingapuRateMainWindow.alert("retString = " + retString);
-					
 					//now check whether this login credential has been properly verified or not.
 					var resArray = retString.split("|");
 					var domainUrl = "";
@@ -689,17 +687,6 @@ var SingapuRateWebService =
 					var l_iTodayD = (today.getDate());
 					var iIntegerToday = l_iTodayD + l_iTodayM * 100 + l_iTodayY * 10000;					
 					
-					SingapuRateMainWindow.alert(category + "\n" + 
-													ctgryId + "\n" + 
-													minAge + "\n" + 
-													usrAcct + "\n" + 
-													voteId + "\n" + 
-													usrMinAge + "\n" + 
-													domainUrl + "\n" + 
-													iIntegerToday + "\n" + 
-													"");
-					
-													
 					//we can actually pass checking domain here
 					if(domainUrl != "")
 					{
@@ -745,188 +732,79 @@ var SingapuRateWebService =
 							SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches + 1;
 						}
 													
-									if(minAge > SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
-									{
-						        		//block the site
-										var blockURL = SingapuRateUtilities.SingapuRateLocalBlockedHtml + "?" + SingapuRateUtilities.SingapuRateParamNameUrl + "=" + domainUrl 
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryName + "=" + category 
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryId + "=" + ctgryId
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameVoteId + "=" + voteId
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameMinAge + "=" + minAge;
-										aWin.location.replace(blockURL);
-										return;
-								  	}
-								  	else
-								  	{
-									  	//allow the site with a notification
-										var sLabelText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getFormattedString("SingapuRate.notificationText", [domainUrl, category]);
-											
-							            //display the rating inforamtion and promote the user to rate it.
-										//var nb = aWin.gBrowser.getNotificationBox();
-										var nb = SingapuRateMainWindow.gBrowser.getNotificationBox();
-										var sNotificationBoxName = SingapuRateUtilities.SingapuRateExtensionName + '_SR_Website_Rating';
-										var n = nb.getNotificationWithValue(sNotificationBoxName);
-										if(n) 
-										{
-										    n.label = sLabelText;
-										}
-										else 
-										{
-											var voteYourOpinionText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.voteYourOpinionText");
-											var whyYourOpinionMattersText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.whyYourVoteMattersText");
-											
-											var buttons = [];
-											if(voteId <= 0)
-											{
-											    buttons = [
-											    {
-											        label: voteYourOpinionText,
-											        accessKey: 'v',
-											        callback: function(aEvent) 
-											        { 
-														//redirect to singapurate.com for registration
-												      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/posting.php?wrs_url=" + domainUrl + "&wrs_rc=" + ctgryId);
-												    }
-											    },
-											    
-												{
-											        label: whyYourOpinionMattersText,
-											        accessKey: 'w',
-											        callback: function(aEvent) 
-											        { 
-														//redirect to singapurate.com for registration
-												      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/viewtopic.php?f=12&t=1280");
-												    }
-											    },
-												
-											    //it is only for internal check of cached list
-												{
-											        label: 'Caches',
-											        accessKey: 'C',
-											        callback: function(aEvent) 
-											        { 
-												        //open preference dialog box
-												        SingapuRatePrefs.loadDomainCaches();
-												    }
-											    }
-											    ];
-											}
-										    const priority = nb.PRIORITY_WARNING_HIGH;
-										    nb.appendNotification(sLabelText, sNotificationBoxName,
-										                         'chrome://singapurate/skin/icon_exclaim.gif',
-										                          priority, buttons);
-										}
-										return;									  	
-									  	
-								  	}						
-						
-						/*
-						//echeck every tab
-						var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-						                     .getService(Components.interfaces.nsIWindowMediator);
-					  	var browserEnumerator = wm.getEnumerator("navigator:browser");
-					  								
-						// Check each browser instance for our URL
-						while (browserEnumerator.hasMoreElements()) 
+						if(minAge > SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
 						{
-						    var browserWin = browserEnumerator.getNext();
-						    var tabbrowser = browserWin.gBrowser;
-							
-						    // Check each tab of this browser instance
-						    var numTabs = tabbrowser.browsers.length;
-							SingapuRateMainWindow.alert(numTabs+ "\n" + 
-															domainUrl + "\n" + 
-															"while (browserEnumerator.hasMoreElements())");
-						    
-						    for (var index = 0; index < numTabs; index++) 
-						    {
-						    	var currentBrowser = tabbrowser.getBrowserAtIndex(index);
-						    	var sCurrentUri = SingapuRateUtilities.getOnlyDomainName(currentBrowser.currentURI.spec, SingapuRateUtilities.SingapuRateDomainCheckDepth);
-						    	
-						    	SingapuRateMainWindow.alert("getresponse() " + sCurrentUri + " vs " + domainUrl);
-						      	if (sCurrentUri.indexOf( domainUrl ) == 0) 
-						      	{
-						        	// The URL is already opened. block this tab.
-						        	tabbrowser.selectedTab = tabbrowser.tabContainer.childNodes[index];
-						        	
-									if(minAge > SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
-									{
-						        		//block the site
-										var blockURL = SingapuRateUtilities.SingapuRateLocalBlockedHtml + "?" + SingapuRateUtilities.SingapuRateParamNameUrl + "=" + domainUrl 
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryName + "=" + category 
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryId + "=" + ctgryId
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameVoteId + "=" + voteId
-														+ "&" + SingapuRateUtilities.SingapuRateParamNameMinAge + "=" + minAge;
-										browserWin.location.replace(blockURL);
-										return;
-								  	}
-								  	else
-								  	{
-									  	//allow the site with a notification
-										var sLabelText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getFormattedString("SingapuRate.notificationText", [domainUrl, category]);
-											
-							            //display the rating inforamtion and promote the user to rate it.
-										var nb = tabbrowser.getNotificationBox();
-										var sNotificationBoxName = SingapuRateUtilities.SingapuRateExtensionName + '_SR_Website_Rating';
-										var n = nb.getNotificationWithValue(sNotificationBoxName);
-										if(n) 
-										{
-										    n.label = sLabelText;
-										}
-										else 
-										{
-											var voteId		= SingapuRatePrefs.SingapuRateCacheList.voteIds[iUrlIdx];
-											var voteYourOpinionText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.voteYourOpinionText");
-											var whyYourOpinionMattersText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.whyYourVoteMattersText");
-											
-											var buttons = [];
-											if(voteId <= 0)
-											{
-											    buttons = [
-											    {
-											        label: voteYourOpinionText,
-											        accessKey: 'v',
-											        callback: function(aEvent) 
-											        { 
-														//redirect to singapurate.com for registration
-												      	tabbrowser.selectedTab = tabbrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/posting.php?wrs_url=" + domainUrl + "&wrs_rc=" + ctgryId);
-												    }
-											    },
-											    
-												{
-											        label: whyYourOpinionMattersText,
-											        accessKey: 'w',
-											        callback: function(aEvent) 
-											        { 
-														//redirect to singapurate.com for registration
-												      	tabbrowser.selectedTab = tabbrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/viewtopic.php?f=12&t=1280");
-												    }
-											    },
-												
-											    //it is only for internal check of cached list
-												{
-											        label: 'Caches',
-											        accessKey: 'C',
-											        callback: function(aEvent) 
-											        { 
-												        //open preference dialog box
-												        SingapuRatePrefs.loadDomainCaches();
-												    }
-											    }
-											    ];
-											}
-										    const priority = nb.PRIORITY_WARNING_HIGH;
-										    nb.appendNotification(sLabelText, sNotificationBoxName,
-										                         'chrome://singapurate/skin/icon_exclaim.gif',
-										                          priority, buttons);
-										}
-										return;									  	
-									  	
-								  	}
-						      	}
-						    }
+			        		//block the site
+							var blockURL = SingapuRateUtilities.SingapuRateLocalBlockedHtml + "?" + SingapuRateUtilities.SingapuRateParamNameUrl + "=" + domainUrl 
+											+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryName + "=" + category 
+											+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryId + "=" + ctgryId
+											+ "&" + SingapuRateUtilities.SingapuRateParamNameVoteId + "=" + voteId
+											+ "&" + SingapuRateUtilities.SingapuRateParamNameMinAge + "=" + minAge;
+							aWin.location.replace(blockURL);
+							return;
 					  	}
-					  	//*/
+					  	else
+					  	{
+						  	//allow the site with a notification
+							var sLabelText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getFormattedString("SingapuRate.notificationText", [domainUrl, category]);
+											
+				            //display the rating inforamtion and promote the user to rate it.
+							var nb = SingapuRateMainWindow.gBrowser.getNotificationBox();
+							var sNotificationBoxName = SingapuRateUtilities.SingapuRateExtensionName + '_SR_Website_Rating';
+							var n = nb.getNotificationWithValue(sNotificationBoxName);
+							if(n) 
+							{
+							    n.label = sLabelText;
+							}
+							else 
+							{
+								var voteYourOpinionText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.voteYourOpinionText");
+								var whyYourOpinionMattersText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.whyYourVoteMattersText");
+											
+								var buttons = [];
+								if(voteId <= 0)
+								{
+								    buttons = [
+								    {
+								        label: voteYourOpinionText,
+								        accessKey: 'v',
+								        callback: function(aEvent) 
+								        { 
+											//redirect to singapurate.com for registration
+									      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/posting.php?wrs_url=" + domainUrl + "&wrs_rc=" + ctgryId);
+									    }
+								    },
+											    
+									{
+								        label: whyYourOpinionMattersText,
+								        accessKey: 'w',
+								        callback: function(aEvent) 
+								        { 
+											//redirect to singapurate.com for registration
+									      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/viewtopic.php?f=12&t=1280");
+									    }
+								    },
+												
+								    //it is only for internal check of cached list
+									{
+								        label: 'Caches',
+								        accessKey: 'C',
+								        callback: function(aEvent) 
+								        { 
+									        //open preference dialog box
+									        SingapuRatePrefs.loadDomainCaches();
+									    }
+								    }
+								    ];
+								}
+							    const priority = nb.PRIORITY_WARNING_HIGH;
+							    nb.appendNotification(sLabelText, sNotificationBoxName,
+							                         'chrome://singapurate/skin/icon_exclaim.gif',
+							                          priority, buttons);
+							}
+							return;									  	
+									  	
+					  	}						
 						  	
 						return;
 					}
@@ -938,22 +816,20 @@ var SingapuRateWebService =
 				}
 				catch(e) 
 				{
-					//error in getting response, shall never happen
-					//SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
-					SingapuRateMainWindow.alert("error in getting response, shall never happen");
-
+					//error in getting response, shall never happen, block the site
+					aWin.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
 				}
 			}
 		}
 		
-		//var gettimeout = function () 
-		//{
-		//	//something wrong with the webservice, block current tab
-		//	SingapuRateMainWindow.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
-		//}		
+		var gettimeout = function () 
+		{
+			//something wrong with the webservice, block current tab
+			aWin.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);				
+		}		
 						
 		httprequest.onreadystatechange = getresponse;
-		//httprequest.ontimeout = gettimeout;
+		httprequest.ontimeout = gettimeout;
 		try 
 		{
 			httprequest.open(method, url, true);
@@ -974,9 +850,7 @@ var SingapuRateWebService =
 		}
 		catch(e)
 		{
-		    var stringBundle = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle");
-    		var errMsg = stringBundle.getString("SingapuRate.errRequesting");
-			SingapuRateMainWindow.alert(errMsg);
+			SingapuRateUtilities.alertSimpleWndMsg("SingapuRate.errRequesting");
 		}		
 		
 		return xmlresult;
@@ -1027,9 +901,7 @@ var SingapuRateWebService =
 		}
 		catch(e)
 		{
-		    var stringBundle = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle");
-    		var errMsg = stringBundle.getString("SingapuRate.wsdlError");
-			SingapuRateMainWindow.alert(errMsg);
+			SingapuRateUtilities.alertSimpleWndMsg("SingapuRate.wsdlError");
 		}
 		
 		return;
@@ -1343,8 +1215,6 @@ var SingapuRateWebsiteRatings =
 		catch(e)
 		{
 			//caught an exception, do nothing
-		    SingapuRateMainWindow.alert("isBlockedInCache() exception caught");
-
 		}
 		//default is to allow if not in cache
 		

@@ -382,7 +382,7 @@ var SingapuRateBrowserOverlay =
 		if( username.length < 4 || password.length < 4 )
 		{
 			//it is a wrong birthday format
-			alert("User name and password must have at least 4 characters.");
+			SingapuRateUtilities.alertSimpleWndMsg("SingapuRate.acctOrPwdLengthRqrmt");
 			return false;
 		}
 		
@@ -390,7 +390,7 @@ var SingapuRateBrowserOverlay =
 		if(resArray.length != 3)
 		{
 			//it is a wrong birthday format
-			alert("Please ensure your birthday is in DD-MM-YYYY format.");
+			SingapuRateUtilities.alertSimpleWndMsg("SingapuRate.birthdayFormatRqrmt");
 			return false;
 		}
 		
@@ -406,12 +406,12 @@ var SingapuRateBrowserOverlay =
 				//it is verified and proceed
 				//we will need to save something to ensure that he does not need to relogin for browsing and our future reference.
 				SingapuRatePrefs.storePrefs(true, username, birthday, passwordEncrypted);
-				alert("profile updated successfully. You are now " + acctAge + " years old.");
+				SingapuRateUtilities.alertFormatedWndMsg("SingapuRate.profileUpdateSuccess", [acctAge]);
 			}
 			else
 			{
 				//failed to authenticate, stop processing
-				alert("You failed to authenticate your account, failed to update your profile.");
+				SingapuRateUtilities.alertSimpleWndMsg("SingapuRate.failureInAcctVerification");
 				return false;
 			}
 		}
@@ -497,7 +497,7 @@ var SingapuRateObserver =
 	            
 				SingapuRatePrefs.readPrefs();
 				
-				//we donot block site here, just start the check with web service if necessary
+				//donot check domain url here. we will check it in a centralized place when page is loaded.
 				//XULSingapuRateChrome.checkLocation(window, aSubject.URI.spec);
 			}
 		            
