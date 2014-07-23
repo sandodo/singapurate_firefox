@@ -12,9 +12,9 @@ SingapuRatePrefs.readPrefs();
 
 var XULSingapuRateChrome = 
 {
-    checkLocation: function(location)
+    checkLocation: function(aWin, location)
     {
-        if(SingapuRateWebsiteRatings.isBlackList(location))
+        if(SingapuRateWebsiteRatings.isBlackList(aWin, location))
         {
             return true;
         }
@@ -210,7 +210,6 @@ var XULSingapuRateChrome =
 						}
 						else 
 						{
-							var voteId		= SingapuRatePrefs.SingapuRateCacheList.voteIds[iUrlIdx];
 							var voteYourOpinionText = document.getElementById("singapurate-string-bundle").getString("SingapuRate.voteYourOpinionText");
 							var whyYourOpinionMattersText = document.getElementById("singapurate-string-bundle").getString("SingapuRate.whyYourVoteMattersText");
 							
@@ -261,7 +260,9 @@ var XULSingapuRateChrome =
 					else
 					{
 						//allowed but not in cache actually, send web service. wait for call back.
-						XULSingapuRateChrome.checkLocation(sOnlyDomainName);
+						var doc = event.target;
+						var win = doc.defaultView;
+						XULSingapuRateChrome.checkLocation(win, sOnlyDomainName);
 						return;
 					}
 										
@@ -291,7 +292,10 @@ var XULSingapuRateChrome =
 					}
 					else
 					{
-						//blocked but without any information, not likely to happen
+						//blocked but without any information, happens if user is not logged in
+						var doc = event.target;
+						var win = doc.defaultView;
+						win.location.replace(SingapuRateUtilities.SingapuRateLocalBlockedDefaultHtml);
 					}
 				}
 			
@@ -494,7 +498,7 @@ var SingapuRateObserver =
 				SingapuRatePrefs.readPrefs();
 				
 				//we donot block site here, just start the check with web service if necessary
-				XULSingapuRateChrome.checkLocation(aSubject.URI.spec);
+				//XULSingapuRateChrome.checkLocation(window, aSubject.URI.spec);
 			}
 		            
             return; 

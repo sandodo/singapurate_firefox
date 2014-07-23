@@ -245,6 +245,60 @@ var SingapuRatePrefs =
 		usrMinAges 			: Array(-1, -1, -1, -1),											//minimum age defined by user himself allowed to access
 	},
 	
+    isDomainInCache: function(weburl)
+    {
+	    if(!weburl || weburl.length == 0)
+	    	return true;
+	    
+		if( SingapuRateUtilities.isSingapurateDomain(weburl) === true )
+		{
+			//certified singapurate urls always
+			return true;
+		}
+	    	
+	    var sOnlyDomainName = SingapuRateUtilities.getOnlyDomainName(weburl, SingapuRateUtilities.SingapuRateDomainCheckDepth);	
+		if(!sOnlyDomainName
+				|| sOnlyDomainName == "")
+			return true;
+		
+		var iUrlIdx = -1;
+			
+		try
+		{
+			//loop through the array
+			var l_iCacheListLength = SingapuRatePrefs.SingapuRateCacheList.prefKey.length;
+			var l_iStartPos = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches % SingapuRateUtilities.SingapuRateMaxNumCaches;
+			l_iStartPos += SingapuRateUtilities.SingapuRateNumCachesMoveBack; //move further slots to list end to ensure previous cache can be better matched
+			if( l_iStartPos >= l_iCacheListLength )			
+			{
+				l_iStartPos = l_iCacheListLength - 1;
+			}
+				
+			for(var pIdx = l_iStartPos; pIdx > ( l_iStartPos + 1 - SingapuRateUtilities.SingapuRateMaxNumCaches); pIdx--)
+			{
+				var lipIdx = pIdx;
+				if( lipIdx < 0 )
+					lipIdx = lipIdx + SingapuRateUtilities.SingapuRateMaxNumCaches;
+					
+				var piKey = SingapuRatePrefs.SingapuRateCacheList.idxToDomains[lipIdx];
+				if( piKey != sOnlyDomainName )
+					continue;
+							
+				iUrlIdx 		= lipIdx;
+				break;
+			}
+		}
+		catch(e)
+		{
+			//caught an exception, do nothing
+		}		
+		if(iUrlIdx >= 0)
+			return true;
+			
+		//default not in cache
+		return false;
+    },
+	
     storePrefs: function(bLogin, sAcctName, sBirthday, sPassword)
     {
         SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAuthenticate] = bLogin;
@@ -550,7 +604,7 @@ var SingapuRateWebService =
 		return retString;
 	},	
 	
-	sendReq : function(url, method, header, body, funcName)
+	sendReq : function(aWin, url, method, header, body, funcName)
 	{
 		var xmlresult = "";
 		
@@ -578,6 +632,9 @@ var SingapuRateWebService =
 					}
 					
 					var retString = SingapuRateWebService.startParsingWS(response);
+					
+					SingapuRateMainWindow.alert("retString = " + retString);
+					
 					//now check whether this login credential has been properly verified or not.
 					var resArray = retString.split("|");
 					var domainUrl = "";
@@ -626,54 +683,149 @@ var SingapuRateWebService =
 						}
 					}
 					
+					var today = new Date();
+					var l_iTodayY = today.getFullYear();
+					var l_iTodayM = (today.getMonth() + 1);
+					var l_iTodayD = (today.getDate());
+					var iIntegerToday = l_iTodayD + l_iTodayM * 100 + l_iTodayY * 10000;					
+					
+					SingapuRateMainWindow.alert(category + "\n" + 
+													ctgryId + "\n" + 
+													minAge + "\n" + 
+													usrAcct + "\n" + 
+													voteId + "\n" + 
+													usrMinAge + "\n" + 
+													domainUrl + "\n" + 
+													iIntegerToday + "\n" + 
+													"");
+					
+													
 					//we can actually pass checking domain here
 					if(domainUrl != "")
 					{
-						//add it to cache
-						if( SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches >= SingapuRateUtilities.SingapuRateMaxNumCaches )
+						if( SingapuRatePrefs.isDomainInCache(domainUrl) === false )
 						{
-							//we support up to SingapuRateUtilities.SingapuRateMaxNumCaches caches of website ratings
-							var liNewRoundedIdx = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches % SingapuRateUtilities.SingapuRateMaxNumCaches;
-							//reset the original site
-							SingapuRatePrefs.SingapuRateCacheList.domains[ SingapuRatePrefs.SingapuRateCacheList.idxToDomains[liNewRoundedIdx] ] 		= -1;
-								
-							lsPrefKey = SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAcctName] + "|||" + liNewRoundedIdx;
-							liNewIdxNum = liNewRoundedIdx;
-							SingapuRatePrefs.SingapuRateCacheList.prefKey[liNewRoundedIdx] 		= lsPrefKey; 
-							SingapuRatePrefs.SingapuRateCacheList.domains[domainUrl] 		= liNewRoundedIdx;
-							SingapuRatePrefs.SingapuRateCacheList.idxToDomains[liNewRoundedIdx]	= domainUrl;
-							SingapuRatePrefs.SingapuRateCacheList.categories[liNewRoundedIdx] 	= category;
-							SingapuRatePrefs.SingapuRateCacheList.ctgryIds[liNewRoundedIdx] 		= ctgryId;
-							SingapuRatePrefs.SingapuRateCacheList.minAges[liNewRoundedIdx] 		= minAge;
-							SingapuRatePrefs.SingapuRateCacheList.entryDates[liNewRoundedIdx] 	= iIntegerToday;				
-							SingapuRatePrefs.SingapuRateCacheList.voteIds[liNewRoundedIdx] 		= voteId;
-							SingapuRatePrefs.SingapuRateCacheList.usrMinAges[liNewRoundedIdx] 	= usrMinAge;
+							//add it to cache
+							if( SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches >= SingapuRateUtilities.SingapuRateMaxNumCaches )
+							{
+								//we support up to SingapuRateUtilities.SingapuRateMaxNumCaches caches of website ratings
+								var liNewRoundedIdx = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches % SingapuRateUtilities.SingapuRateMaxNumCaches;
+								//reset the original site
+								SingapuRatePrefs.SingapuRateCacheList.domains[ SingapuRatePrefs.SingapuRateCacheList.idxToDomains[liNewRoundedIdx] ] 		= -1;
+									
+								lsPrefKey = SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAcctName] + "|||" + liNewRoundedIdx;
+								liNewIdxNum = liNewRoundedIdx;
+								SingapuRatePrefs.SingapuRateCacheList.prefKey[liNewRoundedIdx] 		= lsPrefKey; 
+								SingapuRatePrefs.SingapuRateCacheList.domains[domainUrl] 		= liNewRoundedIdx;
+								SingapuRatePrefs.SingapuRateCacheList.idxToDomains[liNewRoundedIdx]	= domainUrl;
+								SingapuRatePrefs.SingapuRateCacheList.categories[liNewRoundedIdx] 	= category;
+								SingapuRatePrefs.SingapuRateCacheList.ctgryIds[liNewRoundedIdx] 		= ctgryId;
+								SingapuRatePrefs.SingapuRateCacheList.minAges[liNewRoundedIdx] 		= minAge;
+								SingapuRatePrefs.SingapuRateCacheList.entryDates[liNewRoundedIdx] 	= iIntegerToday;				
+								SingapuRatePrefs.SingapuRateCacheList.voteIds[liNewRoundedIdx] 		= voteId;
+								SingapuRatePrefs.SingapuRateCacheList.usrMinAges[liNewRoundedIdx] 	= usrMinAge;
+							}
+							else
+							{
+								//add new cache
+								var iSize = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches;
+								lsPrefKey = SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAcctName] + "|||" + iSize;
+								liNewIdxNum = iSize;
+								SingapuRatePrefs.SingapuRateCacheList.prefKey[iSize] 				= lsPrefKey;
+								SingapuRatePrefs.SingapuRateCacheList.domains[domainUrl] 		= iSize;
+								SingapuRatePrefs.SingapuRateCacheList.idxToDomains[iSize] 			= domainUrl;
+								SingapuRatePrefs.SingapuRateCacheList.categories[iSize] 				= category;
+								SingapuRatePrefs.SingapuRateCacheList.ctgryIds[iSize] 				= ctgryId;
+								SingapuRatePrefs.SingapuRateCacheList.minAges[iSize] 				= minAge;
+								SingapuRatePrefs.SingapuRateCacheList.entryDates[iSize] 				= iIntegerToday;				
+								SingapuRatePrefs.SingapuRateCacheList.voteIds[iSize] 				= voteId;
+								SingapuRatePrefs.SingapuRateCacheList.usrMinAges[iSize] 				= usrMinAge;
+									
+							}
+							SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches + 1;
 						}
-						else
-						{
-							//add new cache
-							var iSize = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches;   
-							lsPrefKey = SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAcctName] + "|||" + iSize;
-							liNewIdxNum = iSize;
-							SingapuRatePrefs.SingapuRateCacheList.prefKey[iSize] 				= lsPrefKey;
-							SingapuRatePrefs.SingapuRateCacheList.domains[domainUrl] 		= iSize;
-							SingapuRatePrefs.SingapuRateCacheList.idxToDomains[iSize] 			= domainUrl;
-							SingapuRatePrefs.SingapuRateCacheList.categories[iSize] 				= category;
-							SingapuRatePrefs.SingapuRateCacheList.ctgryIds[iSize] 				= ctgryId;
-							SingapuRatePrefs.SingapuRateCacheList.minAges[iSize] 				= minAge;
-							SingapuRatePrefs.SingapuRateCacheList.entryDates[iSize] 				= iIntegerToday;				
-							SingapuRatePrefs.SingapuRateCacheList.voteIds[iSize] 				= voteId;
-							SingapuRatePrefs.SingapuRateCacheList.usrMinAges[iSize] 				= usrMinAge;
-								
-						}
-						SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches + 1;
-
-						/*						
+													
+									if(minAge > SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
+									{
+						        		//block the site
+										var blockURL = SingapuRateUtilities.SingapuRateLocalBlockedHtml + "?" + SingapuRateUtilities.SingapuRateParamNameUrl + "=" + domainUrl 
+														+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryName + "=" + category 
+														+ "&" + SingapuRateUtilities.SingapuRateParamNameCategoryId + "=" + ctgryId
+														+ "&" + SingapuRateUtilities.SingapuRateParamNameVoteId + "=" + voteId
+														+ "&" + SingapuRateUtilities.SingapuRateParamNameMinAge + "=" + minAge;
+										aWin.location.replace(blockURL);
+										return;
+								  	}
+								  	else
+								  	{
+									  	//allow the site with a notification
+										var sLabelText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getFormattedString("SingapuRate.notificationText", [domainUrl, category]);
+											
+							            //display the rating inforamtion and promote the user to rate it.
+										//var nb = aWin.gBrowser.getNotificationBox();
+										var nb = SingapuRateMainWindow.gBrowser.getNotificationBox();
+										var sNotificationBoxName = SingapuRateUtilities.SingapuRateExtensionName + '_SR_Website_Rating';
+										var n = nb.getNotificationWithValue(sNotificationBoxName);
+										if(n) 
+										{
+										    n.label = sLabelText;
+										}
+										else 
+										{
+											var voteYourOpinionText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.voteYourOpinionText");
+											var whyYourOpinionMattersText = SingapuRateMainWindow.document.getElementById("singapurate-string-bundle").getString("SingapuRate.whyYourVoteMattersText");
+											
+											var buttons = [];
+											if(voteId <= 0)
+											{
+											    buttons = [
+											    {
+											        label: voteYourOpinionText,
+											        accessKey: 'v',
+											        callback: function(aEvent) 
+											        { 
+														//redirect to singapurate.com for registration
+												      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/posting.php?wrs_url=" + domainUrl + "&wrs_rc=" + ctgryId);
+												    }
+											    },
+											    
+												{
+											        label: whyYourOpinionMattersText,
+											        accessKey: 'w',
+											        callback: function(aEvent) 
+											        { 
+														//redirect to singapurate.com for registration
+												      	SingapuRateMainWindow.gBrowser.selectedTab = SingapuRateMainWindow.gBrowser.addTab("http://" + SingapuRateUtilities.SingapuRateDomainName + "/viewtopic.php?f=12&t=1280");
+												    }
+											    },
+												
+											    //it is only for internal check of cached list
+												{
+											        label: 'Caches',
+											        accessKey: 'C',
+											        callback: function(aEvent) 
+											        { 
+												        //open preference dialog box
+												        SingapuRatePrefs.loadDomainCaches();
+												    }
+											    }
+											    ];
+											}
+										    const priority = nb.PRIORITY_WARNING_HIGH;
+										    nb.appendNotification(sLabelText, sNotificationBoxName,
+										                         'chrome://singapurate/skin/icon_exclaim.gif',
+										                          priority, buttons);
+										}
+										return;									  	
+									  	
+								  	}						
+						
+						/*
 						//echeck every tab
 						var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 						                     .getService(Components.interfaces.nsIWindowMediator);
 					  	var browserEnumerator = wm.getEnumerator("navigator:browser");
-							
+					  								
 						// Check each browser instance for our URL
 						while (browserEnumerator.hasMoreElements()) 
 						{
@@ -682,17 +834,22 @@ var SingapuRateWebService =
 							
 						    // Check each tab of this browser instance
 						    var numTabs = tabbrowser.browsers.length;
+							SingapuRateMainWindow.alert(numTabs+ "\n" + 
+															domainUrl + "\n" + 
+															"while (browserEnumerator.hasMoreElements())");
+						    
 						    for (var index = 0; index < numTabs; index++) 
 						    {
 						    	var currentBrowser = tabbrowser.getBrowserAtIndex(index);
-						    	var sCurrentUri = SingapuRateUtilities.getOnlyDomainName(sUrlAddress, SingapuRateUtilities.SingapuRateDomainCheckDepth);
+						    	var sCurrentUri = SingapuRateUtilities.getOnlyDomainName(currentBrowser.currentURI.spec, SingapuRateUtilities.SingapuRateDomainCheckDepth);
+						    	
 						    	SingapuRateMainWindow.alert("getresponse() " + sCurrentUri + " vs " + domainUrl);
 						      	if (sCurrentUri.indexOf( domainUrl ) == 0) 
 						      	{
 						        	// The URL is already opened. block this tab.
 						        	tabbrowser.selectedTab = tabbrowser.tabContainer.childNodes[index];
 						        	
-									if(minAge <= SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
+									if(minAge > SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
 									{
 						        		//block the site
 										var blockURL = SingapuRateUtilities.SingapuRateLocalBlockedHtml + "?" + SingapuRateUtilities.SingapuRateParamNameUrl + "=" + domainUrl 
@@ -701,7 +858,7 @@ var SingapuRateWebService =
 														+ "&" + SingapuRateUtilities.SingapuRateParamNameVoteId + "=" + voteId
 														+ "&" + SingapuRateUtilities.SingapuRateParamNameMinAge + "=" + minAge;
 										browserWin.location.replace(blockURL);
-							
+										return;
 								  	}
 								  	else
 								  	{
@@ -762,7 +919,8 @@ var SingapuRateWebService =
 										    nb.appendNotification(sLabelText, sNotificationBoxName,
 										                         'chrome://singapurate/skin/icon_exclaim.gif',
 										                          priority, buttons);
-										}									  	
+										}
+										return;									  	
 									  	
 								  	}
 						      	}
@@ -840,7 +998,7 @@ var SingapuRateWebService =
 		return soaprequestStr;
 	},
 
-	doSendRequest : function(funcName, param_and_inputs) 
+	doSendRequest : function(aWin, funcName, param_and_inputs) 
 	{
 		var targetnamespace = SingapuRateUtilities.SingapuRateWSNameSpace;
 		var choosedoperationname = funcName;
@@ -862,11 +1020,9 @@ var SingapuRateWebService =
 		var wsBody = soaprequestStr;
 		var response = "";
 		
-		SingapuRateMainWindow.alert(SingapuRateUtilities.SingapuRateWSLocation + "\n" + wsMethod + "\n" + wsHeader + "\n" + wsBody + "\n" + funcName);
-
 		try
 		{
-			SingapuRateWebService.sendReq( SingapuRateUtilities.SingapuRateWSLocation, wsMethod, wsHeader, wsBody, funcName );
+			SingapuRateWebService.sendReq(aWin, SingapuRateUtilities.SingapuRateWSLocation, wsMethod, wsHeader, wsBody, funcName );
 			
 		}
 		catch(e)
@@ -884,7 +1040,7 @@ var SingapuRateWebService =
 
 var SingapuRateWebsiteRatings = 
 {
-    isBlackList: function(weburl)
+    isBlackList: function(aWin, weburl)
     {
 	    if(!weburl || weburl.length == 0)
 	    	return false;
@@ -979,7 +1135,7 @@ var SingapuRateWebsiteRatings =
 				var param_and_inputs = {"usr" : SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAcctName],
 										"domain" : sOnlyDomainName };
 										
-				SingapuRateWebService.doSendRequest(SingapuRateUtilities.SingapuRateWSRateMethod, param_and_inputs);
+				SingapuRateWebService.doSendRequest(aWin, SingapuRateUtilities.SingapuRateWSRateMethod, param_and_inputs);
 
 				//as we donot have this domain url in cache, we allow it first. callback of the web service will block it later if not allowed
 				return false;
@@ -1075,59 +1231,6 @@ var SingapuRateWebsiteRatings =
 				    
     },
     
-    isDomainInCache: function(weburl)
-    {
-	    if(!weburl || weburl.length == 0)
-	    	return true;
-	    
-		if( SingapuRateUtilities.isSingapurateDomain(weburl) === true )
-		{
-			//certified singapurate urls always
-			return true;
-		}
-	    	
-	    var sOnlyDomainName = SingapuRateUtilities.getOnlyDomainName(weburl, SingapuRateUtilities.SingapuRateDomainCheckDepth);	
-		if(!sOnlyDomainName
-				|| sOnlyDomainName == "")
-			return true;
-		
-		var iUrlIdx = -1;
-			
-		try
-		{
-			//loop through the array
-			var l_iCacheListLength = SingapuRatePrefs.SingapuRateCacheList.prefKey.length;
-			var l_iStartPos = SingapuRatePrefs.SingapuRateCacheList.liTotalNumCaches % SingapuRateUtilities.SingapuRateMaxNumCaches;
-			l_iStartPos += SingapuRateUtilities.SingapuRateNumCachesMoveBack; //move further slots to list end to ensure previous cache can be better matched
-			if( l_iStartPos >= l_iCacheListLength )			
-			{
-				l_iStartPos = l_iCacheListLength - 1;
-			}
-				
-			for(var pIdx = l_iStartPos; pIdx > ( l_iStartPos + 1 - SingapuRateUtilities.SingapuRateMaxNumCaches); pIdx--)
-			{
-				var lipIdx = pIdx;
-				if( lipIdx < 0 )
-					lipIdx = lipIdx + SingapuRateUtilities.SingapuRateMaxNumCaches;
-					
-				var piKey = SingapuRatePrefs.SingapuRateCacheList.idxToDomains[lipIdx];
-				if( piKey != sOnlyDomainName )
-					continue;
-							
-				iUrlIdx 		= lipIdx;
-				break;
-			}
-		}
-		catch(e)
-		{
-			//caught an exception, do nothing
-		}		
-		if(iUrlIdx >= 0)
-			return true;
-			
-		//default not in cache
-		return false;
-    },
 
     
     isBlockedInCache: function(weburl)
@@ -1138,7 +1241,12 @@ var SingapuRateWebsiteRatings =
 	    var strKeyCategoryId 	= SingapuRateUtilities.SingapuRateParamNameCategoryId;
 	    var strKeyBlocked 		= SingapuRateUtilities.SingapuRateParamNameSiteBlocked;
 	    
-		var retResults = { strKeyBlocked: false, strKeyMinAge: 21, strKeyCategoryName: "R21", strKeyVoteId: -1, strKeyCategoryId: -1 };
+	    var retResults = [];
+	    retResults[strKeyBlocked] = false;
+	    retResults[strKeyMinAge] = 21;
+	    retResults[strKeyCategoryName] = "R21";
+	    retResults[strKeyVoteId] = -1;
+	    retResults[strKeyCategoryId] = -1;
 	    
 	    if(!weburl || weburl.length == 0)
 	    	return retResults;
@@ -1159,7 +1267,6 @@ var SingapuRateWebsiteRatings =
 			
 		    if( SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyAuthenticate] === false )
 		    {
-			    SingapuRateMainWindow.alert("isBlockedInCache() user is not authenticated");
 			    //donot allow access websites
 			    retResults[strKeyBlocked] = true;
 			    return retResults;
@@ -1210,12 +1317,11 @@ var SingapuRateWebsiteRatings =
 						return retResults;
 					}	
 					
-					//var retResults = { strKeyBlocked: false, strKeyMinAge: 21, strKeyCategoryName: "R21", strKeyVoteId: -1, strKeyCategoryId: -1 };
 					retResults[strKeyMinAge] 		= minAge;
 					retResults[strKeyCategoryName] 	= category;
 					retResults[strKeyVoteId] 		= voteId;
 					retResults[strKeyCategoryId] 	= ctgryId;
-					
+										
 					//entry still valid
 					if(minAge <= SingapuRateUtilities.getUserAge(SingapuRatePrefs.SingapuRateStoredInformation[SingapuRateUtilities.SingapuRatePrefKeyBirthday]))
 					{
@@ -1237,8 +1343,11 @@ var SingapuRateWebsiteRatings =
 		catch(e)
 		{
 			//caught an exception, do nothing
-		}		
+		    SingapuRateMainWindow.alert("isBlockedInCache() exception caught");
+
+		}
 		//default is to allow if not in cache
+		
         return retResults;
     },  
     
