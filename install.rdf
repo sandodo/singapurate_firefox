@@ -7,7 +7,7 @@
 
         <em:name>SingapuRate Website Filtering Service</em:name>
         
-        <em:description>Automatically blocks websites non-suitable for your age, referring to database of singapurate.com.
+        <em:description>Automatically blocks websites non-suitable for your age, referring to websites rating database of singapurate.com.
 Your personalized preferences on the raings of each websites will be retained if your choices are more restricted than their aggregated ratings.
 		</em:description>
         <em:type>2</em:type>

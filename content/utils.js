@@ -604,7 +604,7 @@ var SingapuRateWebService =
 		return retString;
 	},	
 	
-	sendReq : function(aWin, url, method, header, body, funcName)
+	sendReq : function(aWin, url, method, header, body, funcName, domainAddress)
 	{
 		var xmlresult = "";
 		
@@ -615,7 +615,7 @@ var SingapuRateWebService =
 		var choosedoperationname = funcName;
 
 		var getresponse = function () {
-			
+						
 			//callback gets response
 			if (httprequest.readyState == 4) 
 			{
@@ -686,6 +686,11 @@ var SingapuRateWebService =
 					var l_iTodayM = (today.getMonth() + 1);
 					var l_iTodayD = (today.getDate());
 					var iIntegerToday = l_iTodayD + l_iTodayM * 100 + l_iTodayY * 10000;					
+					
+					if(domainUrl == "")
+					{
+						domainUrl = domainAddress;
+					}
 					
 					//we can actually pass checking domain here
 					if(domainUrl != "")
@@ -880,10 +885,15 @@ var SingapuRateWebService =
 		
 		// as Array:  parameternames_and_inputs[name] = value
 		var outString = "";
+		var lDomainAddress = "";
 		for(var piKey in param_and_inputs) 
 		{
 			var tempStr = "<" + piKey + ">" + param_and_inputs[piKey] + "</" + piKey + ">";
 			outString = outString + tempStr;
+			if( piKey == "domain" )
+			{
+				lDomainAddress = param_and_inputs[piKey];
+			}
 		}
 				
 		var soaprequestStr = SingapuRateWebService.soaprequest(targetnamespace, choosedoperationname, outString);
@@ -897,7 +907,7 @@ var SingapuRateWebService =
 		
 		try
 		{
-			SingapuRateWebService.sendReq(aWin, SingapuRateUtilities.SingapuRateWSLocation, wsMethod, wsHeader, wsBody, funcName );
+			SingapuRateWebService.sendReq(aWin, SingapuRateUtilities.SingapuRateWSLocation, wsMethod, wsHeader, wsBody, funcName, lDomainAddress );
 			
 		}
 		catch(e)
