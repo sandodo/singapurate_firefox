@@ -1,6 +1,0 @@
-<!ENTITY  SingapuRate.overlay.label         	"SingapuRate">
-<!ENTITY  SingapuRate.overlay.login.label   	"Register | Update">
-<!ENTITY  SingapuRate.overlay.login.accessKey   "R">
-<!ENTITY  SingapuRate.overlay.logout.label  	"Deregister">
-<!ENTITY  SingapuRate.overlay.logout.accessKey  "D">
-<!ENTITY  SingapuRate.preferences				"SingapuRate Preferences">

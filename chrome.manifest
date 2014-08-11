@@ -1,5 +1,0 @@
-content		singapurate								content/
-skin		singapurate		classic/1.0				skin/
-locale		singapurate		en-US					locale/en-US/
-
-overlay chrome://browser/content/browser.xul  chrome://singapurate/content/browserOverlay.xul
