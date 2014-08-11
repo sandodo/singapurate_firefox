@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <style>
+            body { 
+                min-width: 300; 
+                overflow-x: hidden; 
+                font-family: Arial, sans-serif; 
+                font-size: 12px; 
+            }
+            table { 
+                overflow-x: hidden; 
+                font-family: Arial, sans-serif; 
+                font-size: 12px; 
+            }
+            input, textarea { 
+                width: 300; 
+            }
+            input#save { 
+                font-weight: bold; width: auto; 
+            }
+        </style>
+        <script type="text/javascript" src="content/md5.js"></script>
+        <script type="text/javascript" src="content/utils.js"></script>
+        <script type="text/javascript" src="content/popup.js"></script>
+    	<meta name="description" content="provides ratings for all websites, from Singapore" />
+    	<title>SingapuRate</title>
+    </head>
+    
+    <body>
+    	<table>
+    	<tr>
+    	<td>
+        <form id="SingapuRatePopUpForm">
+            <p><label id="label_username">Username</label><br />
+            <input type="text" id="c_username" name="c_username" size="50" value="" /></p>
+            <p><label id="label_passwrd">Password</label><br />
+            <input type="password" id="c_password" name="c_password" size="50" value="" /></p>
+            <p><label id="label_birthday">Birthday (DD-MM-YYYY)</label><br />
+            <input type="text" id="c_birthday" name="c_birthday" size="50" value="" /></p>
+            <p><input style="width: 20; vertical-align: middle;" type="checkbox" id="c_supersafe" name="c_supersafe" value="" /><label style="vertical-align: middle;" id="label_supersafe">Super Safe Mode</label></p>
+            <p>
+            	<button id="b_save" >Save</button>
+            	<button id="b_deregister" >Deregister</button>
+            	<button id="b_close" ">Close</button><br />
+                <a target="_blank" href="http://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.singapurate.com%2F"><img src="http://www.singapurate.com/images/icons/facebook.png" alt="Share On Facebook"></img></a>
+                <a target="_blank" href="http://www.twitter.com/intent/tweet?status=SingapuRate+-+provides+ratings+for+all+websites:+http://www.singapurate.com/&url=http://www.singapurate.com/"><img src="http://www.singapurate.com/images/icons/twitter.png" alt="Share On Twitter"></img></a>
+				<a target="_blank" href="https://plus.google.com/share?url=http%3A%2F%2Fwww.singapurate.com%2F"><img src="http://www.singapurate.com/images/icons/google-plus.png" alt="Share On Google+"></img></a>
+            </p>
+        </form>
+    	</td>
+    	<td id="c_divider_line" >
+    	</td>
+    	<td id="c_vote_buttons" >
+    	<input id="b_vote_opinion" /><br />
+    	<input id="b_why_matters" />
+    	</td>
+    	</tr>
+    	</table>
+    </body>
+</html>
