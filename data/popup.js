@@ -17,6 +17,7 @@ self.port.on("initMsg", function(msg) {
 	var sSuperSafeMode = "";
 	var sVoteId = "";
 	var sAuthenticateCode = "";
+	var sUserAge = "0";
 	
 	for(var i=0; i < resArray.length; i++) 
 	{
@@ -54,6 +55,10 @@ self.port.on("initMsg", function(msg) {
 		{
 			sAuthenticateCode = sTempKeyValuePair[1];
 		}
+		else if (sTempKeyValuePair[0] == "userAge")
+		{
+			sUserAge = sTempKeyValuePair[1];
+		}
 	}
 	//*/
 	if(sCurDomainUrlIdx == "")
@@ -70,9 +75,8 @@ self.port.on("initMsg", function(msg) {
   	{
     	document.getElementById("c_username").setAttribute("disabled","disabled");
     
-    	//var sWelcomeMessage = chrome.i18n.getMessage("SingapuRate_welcome_local_acct", [ SingapuRateSS.storage[SingapuRateUtils.SR_Utilities.SingapuRatePrefKeyAcctName], 
-        //                                                                             SingapuRateUtils.SR_Utilities.getUserAge(SingapuRateSS.storage[SingapuRateUtils.SR_Utilities.SingapuRatePrefKeyBirthday]) ]);
-        var sWelcomeMessage = "SingapuRate_welcome_local_acct";
+        var sWelcomeMessage = "Welcome back " + sUserName + ": You are now " + sUserAge + " year(s) old";
+        
     	document.getElementById("label_username").textContent = sWelcomeMessage;
     
     	if(sSuperSafeMode == "yes" )    													
@@ -137,8 +141,7 @@ window.onload = function() {
 		if( username.length < 4 || password.length < 4 )
 		{
 	  		//it is a wrong username or password
-	  		//alert(chrome.i18n.getMessage("SingapuRate_wrong_username_or_password", [4]));
-	  		alert("SingapuRate_wrong_username_or_password");
+	  		alert("Please ensure your username or password is at least 4 characters long");
 	  		return;
 		}
 		else
@@ -148,8 +151,7 @@ window.onload = function() {
 			if(resArray.length != 3)
 			{
 		  		//it is a wrong birthday format
-	  	  		//alert(chrome.i18n.getMessage("SingapuRate_wrong_birthday"));
-	  	  		alert("SingapuRate_wrong_birthday");
+	  	  		alert("Please ensure your birthday is in DD-MM-YYYY format");
 		  		return;
 			}
 			else
@@ -166,14 +168,14 @@ window.onload = function() {
 					else
 					{
 						//failed to authenticate
-	  	  				alert("SingapuRate_update_fail");
+	  	  				alert("Failure in account authnetication, your profile is not updated");
 						return;
 					}
 				}
 			}
 		}
 		
-		alert("SingapuRate_update_success");
+		alert("Profile updated successfully");
 			
 		//compose the string for profile save
 		var sPostMsg = "";
@@ -198,8 +200,7 @@ window.onload = function() {
 		if( username.length < 4 || password.length < 4 )
 		{
 	  		//it is a wrong username or password
-	  		//alert(chrome.i18n.getMessage("SingapuRate_wrong_username_or_password", [4]));
-	  		alert("SingapuRate_wrong_username_or_password");
+	  		alert("Please ensure your username or password is at least 4 characters long");
 	  
 	  		return;
 		}
@@ -216,21 +217,19 @@ window.onload = function() {
 				else
 				{
 					//failed to authenticate
-	  				//alert(chrome.i18n.getMessage("SingapuRate_logout_fail", [username]));
-	  				alert("SingapuRate_logout_fail");
+	  				alert("Failed to verify thus cannot deregister " + username);
 				
 					return;
 				}
 			}
 			else
 			{
-  				//alert(chrome.i18n.getMessage("SingapuRate_already_logout"));
-  				alert("SingapuRate_already_logout");
+  				alert("You have already deregistered your local account");
 				return;
 			}
 		}
 	
-		alert("SingapuRate_logout_success");
+		alert("Deregister local account " + username + " successfully. We look forward to seeing you soon");
 		
 		//compose the string for profile save
 		var sPostMsg = "";
@@ -240,6 +239,18 @@ window.onload = function() {
 		self.port.emit("deregister", sPostMsg);
 									
     	return;	  
-  };  	      
+  	};
+  	
+  	document.getElementById("c_supersafe").onclick = function() {
+		var supersafe = document.getElementById("c_supersafe").value.trim();  
+    	if( supersafe == "yes" )
+    	{
+	  		document.getElementById("c_supersafe").value = "no";
+    	}
+    	else
+    	{
+      		document.getElementById("c_supersafe").value = "yes"; 
+    	}
+  	};  	
 };
 
