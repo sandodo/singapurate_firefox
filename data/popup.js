@@ -18,6 +18,9 @@ self.port.on("initMsg", function(msg) {
 	var sVoteId = "";
 	var sAuthenticateCode = "";
 	var sUserAge = "0";
+	var sCategoryId = "-1";
+	var sSRDomainName = "";
+	var sToCheckDomainName = "";
 	
 	for(var i=0; i < resArray.length; i++) 
 	{
@@ -59,6 +62,18 @@ self.port.on("initMsg", function(msg) {
 		{
 			sUserAge = sTempKeyValuePair[1];
 		}
+		else if (sTempKeyValuePair[0] == "categoryId")
+		{
+			sCategoryId = sTempKeyValuePair[1];
+		}
+		else if (sTempKeyValuePair[0] == "SRDomainName")
+		{
+			sSRDomainName = sTempKeyValuePair[1];
+		}
+		else if (sTempKeyValuePair[0] == "ToCheckDomainName")
+		{
+			sToCheckDomainName = sTempKeyValuePair[1];
+		}
 	}
 	//*/
 	if(sCurDomainUrlIdx == "")
@@ -70,6 +85,10 @@ self.port.on("initMsg", function(msg) {
 	document.getElementById("c_birthday").value = sUserBirthday;
 	document.getElementById("authencode").value = sAuthenticateCode;
 	document.getElementById("authenticate").value = sAuthenticate;
+	document.getElementById("categoryId").value = sCategoryId;
+	document.getElementById("SRDomainName").value = sSRDomainName;
+	document.getElementById("ToCheckDomainName").value = sToCheckDomainName;
+	document.getElementById("curDomainUrlIdx").value = sCurDomainUrlIdx;
 	
   	if( sAuthenticate == "true"  )
   	{
@@ -108,11 +127,11 @@ self.port.on("initMsg", function(msg) {
     
     	document.getElementById("b_vote_opinion").setAttribute("style","vertical-align: top; width: 50px;");	
     	document.getElementById("b_vote_opinion").setAttribute("type","image");	
-    	document.getElementById("b_vote_opinion").setAttribute("src","./data/vote_opinion.png");	
+    	document.getElementById("b_vote_opinion").setAttribute("src","./vote_opinion.png");	
 
     	document.getElementById("b_why_matters").setAttribute("style","vertical-align: top; width: 50px;");	
     	document.getElementById("b_why_matters").setAttribute("type","image");	
-    	document.getElementById("b_why_matters").setAttribute("src","./data/why_matters.png");
+    	document.getElementById("b_why_matters").setAttribute("src","./why_matters.png");
         
   	}
   	else
@@ -129,7 +148,7 @@ self.port.on("initMsg", function(msg) {
 
 window.onload = function() {
   	document.getElementById("b_save").onclick = function() {
-	  	console.log("b_save" + ": " + "clicked");
+	  	//console.log("b_save" + ": " + "clicked");
     	var username = document.getElementById("c_username").value.trim();
 		var password = document.getElementById("c_password").value.trim();
 		var birthday = document.getElementById("c_birthday").value.trim();
@@ -190,7 +209,7 @@ window.onload = function() {
   	};
 
   	document.getElementById("b_deregister").onclick = function() {
-	  	console.log("b_deregister" + ": " + "clicked");
+	  	//console.log("b_deregister" + ": " + "clicked");
     	var username = document.getElementById("c_username").value.trim();
 		var password = document.getElementById("c_password").value.trim();
 		var birthday = document.getElementById("c_birthday").value.trim();
@@ -251,6 +270,41 @@ window.onload = function() {
     	{
       		document.getElementById("c_supersafe").value = "yes"; 
     	}
-  	};  	
+  	}; 
+  	
+  	document.getElementById("b_why_matters").onclick = function() {
+
+		var sCategoryId = document.getElementById("categoryId").value;
+		var sSRDomainName = document.getElementById("SRDomainName").value;
+		var sToCheckDomainName = document.getElementById("ToCheckDomainName").value;
+		  	
+		var voteUrl = "http://" + sSRDomainName + "/viewtopic.php?f=12&t=1280";
+		
+		self.port.emit("goUrl", voteUrl);
+		
+    	return;
+  	};
+  
+  	document.getElementById("b_vote_opinion").onclick = function() {
+	
+		var sCategoryId = document.getElementById("categoryId").value;
+		var sSRDomainName = document.getElementById("SRDomainName").value;
+		var sToCheckDomainName = document.getElementById("ToCheckDomainName").value;
+		var voteUrl = "http://" + sSRDomainName;
+  
+		var sCurDomainUrlIdx = document.getElementById("curDomainUrlIdx").value;	
+		
+		var iUrlIdx = parseInt(sCurDomainUrlIdx);
+
+		if(iUrlIdx >= 0)
+		{
+	    	voteUrl = "http://" + sSRDomainName + "/posting.php?wrs_url=" + sToCheckDomainName + "&wrs_rc=" + sCategoryId;
+		}
+		self.port.emit("goUrl", voteUrl);
+		
+   		return;
+	
+  	};
+    		
 };
 
