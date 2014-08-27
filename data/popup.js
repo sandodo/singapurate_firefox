@@ -80,7 +80,7 @@ self.port.on("initMsg", function(msg) {
 		sCurDomainUrlIdx = "-1";
 	if(sVoteId == "")
 		sVoteId = "0";		
-			
+		
 	document.getElementById("c_username").value = sUserName;
 	document.getElementById("c_birthday").value = sUserBirthday;
 	document.getElementById("authencode").value = sAuthenticateCode;
@@ -149,12 +149,12 @@ self.port.on("initMsg", function(msg) {
 window.onload = function() {
   	document.getElementById("b_save").onclick = function() {
 	  	//console.log("b_save" + ": " + "clicked");
-    	var username = document.getElementById("c_username").value.trim();
-		var password = document.getElementById("c_password").value.trim();
-		var birthday = document.getElementById("c_birthday").value.trim();
-		var supersafe = document.getElementById("c_supersafe").value.trim();
-		var sAuthenticateCode = document.getElementById("authencode").value.trim();
-		var sAuthenticate = document.getElementById("authenticate").value.trim();
+    	var username = document.getElementById("c_username").value;
+		var password = document.getElementById("c_password").value;
+		var birthday = document.getElementById("c_birthday").value;
+		var supersafe = document.getElementById("c_supersafe").value;
+		var sAuthenticateCode = "" + document.getElementById("authencode").value;
+		var sAuthenticate = "" + document.getElementById("authenticate").value;
 	
 		//console.log("b_save" + ": " + "check " + username + " & " + password);
 		if( username.length < 4 || password.length < 4 )
@@ -178,7 +178,7 @@ window.onload = function() {
 				if( sAuthenticate == "true"  )
 				{
 					//console.log("b_save" + ": " + "check " + sAuthenticate);
-		        	var passwordCombineStr = username.trim() + password.trim() + 'nh4da68h4jf6s4kj8g6d4df8b4d5';
+		        	var passwordCombineStr = username + password + 'nh4da68h4jf6s4kj8g6d4df8b4d5';
 					var passwordEncrypted = CryptoJS.MD5(passwordCombineStr);
 					if( passwordEncrypted == sAuthenticateCode )
 					{
@@ -210,11 +210,11 @@ window.onload = function() {
 
   	document.getElementById("b_deregister").onclick = function() {
 	  	//console.log("b_deregister" + ": " + "clicked");
-    	var username = document.getElementById("c_username").value.trim();
-		var password = document.getElementById("c_password").value.trim();
-		var birthday = document.getElementById("c_birthday").value.trim();
-		var sAuthenticateCode = document.getElementById("authencode").value.trim();
-		var sAuthenticate = document.getElementById("authenticate").value.trim();
+    	var username = document.getElementById("c_username").value;
+		var password = document.getElementById("c_password").value;
+		var birthday = document.getElementById("c_birthday").value;
+		var sAuthenticateCode = "" + document.getElementById("authencode").value;
+		var sAuthenticate = document.getElementById("authenticate").value;
 			
 		if( username.length < 4 || password.length < 4 )
 		{
@@ -227,8 +227,9 @@ window.onload = function() {
 		{
 			if( sAuthenticate == "true"  )
 			{
-	        	var passwordCombineStr = username.trim() + password.trim() + 'nh4da68h4jf6s4kj8g6d4df8b4d5';
-				var passwordEncrypted = CryptoJS.MD5(passwordCombineStr);
+	        	var passwordCombineStr = username + password + 'nh4da68h4jf6s4kj8g6d4df8b4d5';
+				var passwordEncrypted = "" + CryptoJS.MD5(passwordCombineStr);
+				
 				if( passwordEncrypted == sAuthenticateCode )
 				{
 					//authenticate the user with password, proceed to deregister the profile
@@ -261,7 +262,7 @@ window.onload = function() {
   	};
   	
   	document.getElementById("c_supersafe").onclick = function() {
-		var supersafe = document.getElementById("c_supersafe").value.trim();  
+		var supersafe = document.getElementById("c_supersafe").value;  
     	if( supersafe == "yes" )
     	{
 	  		document.getElementById("c_supersafe").value = "no";
