@@ -5,5 +5,5 @@
   "description": "Automatically blocks websites non-suitable for your age, referring to websites rating database of singapurate.com. Your personalized preferences on the raings of each websites will be retained if your choices are more restricted than their aggregated ratings.",
   "author": "SingapuRate",
   "license": "MPL 2.0",
-  "version": "2.0.1"
+  "version": "2.0.2"
 }
